@@ -244,7 +244,17 @@ const ui = {
         this.timers.loading = setTimeout(
             () => {
                 // Update progress bar loading class state
-                toggleClass(this.elements.container, this.config.classNames.loading, this.loading);
+                if (!this.config.live) {
+                  toggleClass(this.elements.container, this.config.classNames.loading, this.loading);
+                }
+                else {
+                  if(this.loading) {
+                    toggleClass(this.elements.container, this.config.classNames.loading, this.loading); // Update controls visibility
+                  }
+                  else {
+                    toggleClass(this.elements.container, this.config.classNames.live, true);
+                  }
+                }
 
                 // Update controls visibility
                 ui.toggleControls.call(this);

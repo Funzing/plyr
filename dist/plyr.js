@@ -2244,7 +2244,10 @@ typeof navigator === "object" && (function (global, factory) {
 
           case 'playing':
           case 'progress':
-            setProgress(this.elements.display.buffer, this.buffered * 100);
+            if (!this.config.live) {
+              setProgress(this.elements.display.buffer, this.buffered * 100);
+            }
+
             break;
         }
       }
@@ -2322,7 +2325,12 @@ typeof navigator === "object" && (function (global, factory) {
       } // Display the time a click would seek to
 
 
-      controls.updateTimeDisplay.call(this, this.elements.display.seekTooltip, this.duration / 100 * percent); // Set position
+      controls.updateTimeDisplay.call(this, this.elements.display.seekTooltip, this.duration / 100 * percent);
+
+      if (this.config.live) {
+        controls.updateTimeDisplay.call(this, this.elements.display.duration, this.currentTime);
+      } // Set position
+
 
       this.elements.display.seekTooltip.style.left = "".concat(percent, "%"); // Show/hide the tooltip
       // If the event is a moues in/out and percentage is inside bounds
@@ -2336,7 +2344,12 @@ typeof navigator === "object" && (function (global, factory) {
       // Only invert if only one time element is displayed and used for both duration and currentTime
       var invert = !is$1.element(this.elements.display.duration) && this.config.invertTime; // Duration
 
-      controls.updateTimeDisplay.call(this, this.elements.display.currentTime, invert ? this.duration - this.currentTime : this.currentTime, invert); // Ignore updates while seeking
+      controls.updateTimeDisplay.call(this, this.elements.display.currentTime, invert ? this.duration - this.currentTime : this.currentTime, invert);
+
+      if (this.config.live) {
+        controls.updateTimeDisplay.call(this, this.elements.display.duration, this.currentTime);
+      } // Ignore updates while seeking
+
 
       if (event && event.type === 'timeupdate' && this.media.seeking) {
         return;
@@ -2376,7 +2389,11 @@ typeof navigator === "object" && (function (global, factory) {
 
 
       if (hasDuration) {
-        controls.updateTimeDisplay.call(this, this.elements.display.duration, this.duration);
+        if (this.config.live) {
+          controls.updateTimeDisplay.call(this, this.elements.display.duration, this.currentTime);
+        } else {
+          controls.updateTimeDisplay.call(this, this.elements.display.duration, this.duration);
+        }
       } // Update the tooltip (if visible)
 
 
@@ -2846,9 +2863,14 @@ typeof navigator === "object" && (function (global, factory) {
           });
           var progress = createElement('div', getAttributesFromSelector(_this10.config.selectors.progress)); // Seek range slider
 
-          progress.appendChild(createRange.call(_this10, 'seek', {
-            id: "plyr-seek-".concat(data.id)
-          })); // Buffer progress
+          if (!_this10.config.live) {
+            progress.appendChild(createRange.call(_this10, 'seek', {
+              id: "plyr-seek-".concat(data.id)
+            }));
+          } else {
+            _this10.config.tooltips.seek = false;
+          } // Buffer progress
+
 
           progress.appendChild(createProgress.call(_this10, 'buffer')); // TODO: Add loop display indicator
           // Seek tooltip
@@ -3619,6 +3641,8 @@ typeof navigator === "object" && (function (global, factory) {
   // Plyr default config
   // ==========================================================================
   var defaults$1 = {
+    // Funzing Live
+    live: false,
     // Disable
     enabled: true,
     // Custom media title
@@ -3874,6 +3898,7 @@ typeof navigator === "object" && (function (global, factory) {
       paused: 'plyr--paused',
       stopped: 'plyr--stopped',
       loading: 'plyr--loading',
+      live: 'plyr--live',
       hover: 'plyr--hover',
       tooltip: 'plyr__tooltip',
       cues: 'plyr__cues',
@@ -4557,7 +4582,16 @@ typeof navigator === "object" && (function (global, factory) {
 
       this.timers.loading = setTimeout(function () {
         // Update progress bar loading class state
-        toggleClass(_this4.elements.container, _this4.config.classNames.loading, _this4.loading); // Update controls visibility
+        if (!_this4.config.live) {
+          toggleClass(_this4.elements.container, _this4.config.classNames.loading, _this4.loading);
+        } else {
+          if (_this4.loading) {
+            toggleClass(_this4.elements.container, _this4.config.classNames.loading, _this4.loading); // Update controls visibility
+          } else {
+            toggleClass(_this4.elements.container, _this4.config.classNames.live, true);
+          }
+        } // Update controls visibility
+
 
         ui.toggleControls.call(_this4);
       }, this.loading ? 250 : 0);

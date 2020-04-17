@@ -3,6 +3,9 @@
 // ==========================================================================
 
 const defaults = {
+    // Funzing Live
+    live: false,
+
     // Disable
     enabled: true,
 
@@ -344,6 +347,7 @@ const defaults = {
         paused: 'plyr--paused',
         stopped: 'plyr--stopped',
         loading: 'plyr--loading',
+        live: 'plyr--live',
         hover: 'plyr--hover',
         tooltip: 'plyr__tooltip',
         cues: 'plyr__cues',

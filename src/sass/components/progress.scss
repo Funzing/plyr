@@ -85,6 +85,13 @@ $plyr-progress-offset: $plyr-range-thumb-height;
     color: transparent;
 }
 
+.plyr--live .plyr__progress__buffer {
+  background-size: 25px 25px;
+  color: rgba(255, 255, 255, 0);
+  background-image: none;
+  animation: none;
+}
+
 .plyr--video.plyr--loading .plyr__progress__buffer {
     background-color: $plyr-video-progress-buffered-bg;
 }
