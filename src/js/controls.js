@@ -394,6 +394,25 @@ const controls = {
         return container;
     },
 
+    // Create Live display
+    createLive(attrs) {
+      const attributes = getAttributesFromSelector(this.config.selectors.live, attrs);
+
+      const container = createElement(
+        'div',
+        extend(attributes, {
+          class: attributes.class ? attributes.class : '',
+          'aria-label': i18n.get('live', this.config),
+        }),
+        i18n.get('live', this.config),
+      );
+
+      // Reference for updates
+      this.elements.display.live = container;
+
+      return container;
+    },
+
     // Bind keyboard shortcuts for a menu item
     // We have to bind to keyup otherwise Firefox triggers a click when a keydown event handler shifts focus
     // https://bugzilla.mozilla.org/show_bug.cgi?id=1220143
@@ -1272,6 +1291,7 @@ const controls = {
             createProgress,
             createRange,
             createTime,
+            createLive,
             setQualityMenu,
             setSpeedMenu,
             showMenuPanel,
@@ -1310,6 +1330,11 @@ const controls = {
             // Fast forward button
             if (control === 'fast-forward') {
                 container.appendChild(createButton.call(this, 'fast-forward', defaultAttributes));
+            }
+
+            // Live display
+            if (control === 'live') {
+              container.appendChild(createLive.call(this, defaultAttributes));
             }
 
             // Progress

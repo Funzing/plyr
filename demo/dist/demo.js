@@ -8325,6 +8325,17 @@ typeof navigator === "object" && (function (Raven, Shr) {
 	    this.elements.display[type] = container;
 	    return container;
 	  },
+	  // Create Live display
+	  createLive: function createLive(attrs) {
+	    var attributes = getAttributesFromSelector(this.config.selectors.live, attrs);
+	    var container = createElement('div', extend(attributes, {
+	      class: attributes.class ? attributes.class : '',
+	      'aria-label': i18n.get('live', this.config)
+	    }), i18n.get('live', this.config)); // Reference for updates
+
+	    this.elements.display.live = container;
+	    return container;
+	  },
 	  // Bind keyboard shortcuts for a menu item
 	  // We have to bind to keyup otherwise Firefox triggers a click when a keydown event handler shifts focus
 	  // https://bugzilla.mozilla.org/show_bug.cgi?id=1220143
@@ -9131,6 +9142,7 @@ typeof navigator === "object" && (function (Raven, Shr) {
 	        createProgress = controls.createProgress,
 	        createRange = controls.createRange,
 	        createTime = controls.createTime,
+	        createLive = controls.createLive,
 	        setQualityMenu = controls.setQualityMenu,
 	        setSpeedMenu = controls.setSpeedMenu,
 	        showMenuPanel = controls.showMenuPanel;
@@ -9167,6 +9179,11 @@ typeof navigator === "object" && (function (Raven, Shr) {
 
 	      if (control === 'fast-forward') {
 	        container.appendChild(createButton.call(_this10, 'fast-forward', defaultAttributes));
+	      } // Live display
+
+
+	      if (control === 'live') {
+	        container.appendChild(createLive.call(_this10, defaultAttributes));
 	      } // Progress
 
 
@@ -10073,6 +10090,7 @@ typeof navigator === "object" && (function (Raven, Shr) {
 	    buffered: 'Buffered',
 	    currentTime: 'Current time',
 	    duration: 'Duration',
+	    live: 'Live',
 	    volume: 'Volume',
 	    mute: 'Mute',
 	    unmute: 'Unmute',
@@ -10192,7 +10210,8 @@ typeof navigator === "object" && (function (Raven, Shr) {
 	    },
 	    progress: '.plyr__progress',
 	    captions: '.plyr__captions',
-	    caption: '.plyr__caption'
+	    caption: '.plyr__caption',
+	    live: '.plyr__live'
 	  },
 	  // Class hooks added to the player in different states
 	  classNames: {
@@ -10222,7 +10241,8 @@ typeof navigator === "object" && (function (Raven, Shr) {
 	    uiSupported: 'plyr--full-ui',
 	    noTransition: 'plyr--no-transition',
 	    display: {
-	      time: 'plyr__time'
+	      time: 'plyr__time',
+	      live: 'plyr__live'
 	    },
 	    menu: {
 	      value: 'plyr__menu__value',

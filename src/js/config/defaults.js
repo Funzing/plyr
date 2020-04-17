@@ -160,6 +160,7 @@ const defaults = {
         buffered: 'Buffered',
         currentTime: 'Current time',
         duration: 'Duration',
+        live: 'Live',
         volume: 'Volume',
         mute: 'Mute',
         unmute: 'Unmute',
@@ -328,6 +329,7 @@ const defaults = {
         progress: '.plyr__progress',
         captions: '.plyr__captions',
         caption: '.plyr__caption',
+        live: '.plyr__live',
     },
 
     // Class hooks added to the player in different states
@@ -359,6 +361,7 @@ const defaults = {
         noTransition: 'plyr--no-transition',
         display: {
             time: 'plyr__time',
+            live: 'plyr__live'
         },
         menu: {
             value: 'plyr__menu__value',

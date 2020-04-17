@@ -36,6 +36,10 @@
             padding: 0 ($plyr-control-spacing / 2);
         }
 
+        &.plyr__live {
+          font-size: $plyr-font-size-small;
+        }
+
         &.plyr__progress__container:first-child,
         &.plyr__time:first-child,
         &.plyr__time + .plyr__time {
