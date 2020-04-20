@@ -304,9 +304,9 @@ class Plyr {
 
       if (this.config.live.active){
         this.timers.live = setInterval(() => {
-          const startTime = parseInt(this.elements.display.live.getAttribute('aria-valuestart'));
-          const currentTime = parseInt(Date.now() / 1000) - startTime;
-          if (player && player.duration > 0 && player.duration < currentTime) {
+          const startTime = parseInt(this.elements.display.live.getAttribute('aria-valuestart'), 10);
+          const currentTime = parseInt(Date.now() / 1000, 10) - startTime;
+          if (this.media && this.media.duration > 0 && this.media.duration < currentTime) {
             this.debug.log(`Live time is stopped at ${currentTime} seconds`);
             clearInterval(this.timers.live);
             this.clearLive();

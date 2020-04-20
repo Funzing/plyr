@@ -246,14 +246,11 @@ const ui = {
                 // Update progress bar loading class state
                 if (!this.config.live.active) {
                   toggleClass(this.elements.container, this.config.classNames.loading, this.loading);
+                } else if(this.loading) {
+                    toggleClass(this.elements.container, this.config.classNames.loading, this.loading); // Update controls visibility
                 }
                 else {
-                  if(this.loading) {
-                    toggleClass(this.elements.container, this.config.classNames.loading, this.loading); // Update controls visibility
-                  }
-                  else {
                     toggleClass(this.elements.container, this.config.classNames.live, true);
-                  }
                 }
 
                 // Update controls visibility

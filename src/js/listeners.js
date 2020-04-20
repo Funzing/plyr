@@ -549,22 +549,21 @@ class Listeners {
                   if (!player.config.live.active) {
                     player.togglePlay();
                   }
+                  else if (player.playing) {
+                    player.pause();
+                  }
                   else {
-                    if (player.playing) {
-                      player.pause();
-                    } else {
-                      const startTime = elements.display.live.getAttribute('aria-valuestart');
-                      let currentTime = parseInt(Date.now() / 1000) - parseInt(startTime);
+                    const startTime = elements.display.live.getAttribute('aria-valuestart');
+                    let currentTime = parseInt(Date.now() / 1000, 10) - parseInt(startTime, 10);
 
-                      //if the live is within 10 seconds, make it start now
-                      if (currentTime >= -10 && currentTime < 0) {
-                        currentTime = 0;
-                        elements.display.live.setAttribute('aria-valuestart', parseInt(Date.now() / 1000));
-                        this.player.debug.log('set currentTime to 0')
-                      }
-                      player.currentTime = currentTime;
-                      player.play();
+                    // if the live is within 10 seconds, make it start now
+                    if (currentTime >= -10 && currentTime < 0) {
+                      currentTime = 0;
+                      elements.display.live.setAttribute('aria-valuestart', parseInt(Date.now() / 1000, 10));
+                      this.player.debug.log('set currentTime to 0')
                     }
+                    player.currentTime = currentTime;
+                    player.play();
                   }
                 },
                 'play',

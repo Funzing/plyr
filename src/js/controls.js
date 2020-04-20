@@ -397,8 +397,7 @@ const controls = {
     // Create Live display
     createLive(attrs) {
       const attributes = getAttributesFromSelector(this.config.selectors.live, attrs);
-
-      const startTime = parseInt(Date.now() / 1000) - parseInt(this.config.live.startTime);
+      const startTime = parseInt(Date.now() / 1000, 10) - parseInt(this.config.live.startTime, 10);
       const container = createElement(
         'div',
         extend(attributes, {
