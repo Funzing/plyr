@@ -244,7 +244,7 @@ const ui = {
         this.timers.loading = setTimeout(
             () => {
                 // Update progress bar loading class state
-                if (!this.config.live) {
+                if (!this.config.live.active) {
                   toggleClass(this.elements.container, this.config.classNames.loading, this.loading);
                 }
                 else {

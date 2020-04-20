@@ -379,6 +379,9 @@ class Listeners {
 
         // Handle the media finishing
         on.call(player, player.media, 'ended', () => {
+            // cancel live mode
+            player.clearLive();
+
             // Show poster on end
             if (player.isHTML5 && player.isVideo && player.config.resetOnEnd) {
                 // Restart
@@ -539,7 +542,26 @@ class Listeners {
         // Play/pause toggle
         if (elements.buttons.play) {
             Array.from(elements.buttons.play).forEach(button => {
-                this.bind(button, 'click', player.togglePlay, 'play');
+              this.bind(
+                button,
+                'click',
+                () => {
+                  if (!player.config.live.active) {
+                    player.togglePlay();
+                  }
+                  else {
+                    if (player.playing) {
+                      player.pause();
+                    } else {
+                      const startTime = elements.display.live.getAttribute('aria-valuestart');
+                      const currentTime = parseInt(Date.now() / 1000) - parseInt(startTime);
+                      player.currentTime = currentTime;
+                      player.play();
+                    }
+                  }
+                },
+                'play',
+              );
             });
         }
 

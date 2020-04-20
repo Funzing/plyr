@@ -398,11 +398,12 @@ const controls = {
     createLive(attrs) {
       const attributes = getAttributesFromSelector(this.config.selectors.live, attrs);
 
+      const startTime = parseInt(Date.now() / 1000) - parseInt(this.config.live.startTime);
       const container = createElement(
         'div',
         extend(attributes, {
           class: attributes.class ? attributes.class : '',
-          'aria-label': i18n.get('live', this.config),
+          'aria-label': i18n.get('live', this.config), 'aria-valuestart': startTime,
         }),
         i18n.get('live', this.config),
       );
@@ -659,7 +660,7 @@ const controls = {
                 // Check buffer status
                 case 'playing':
                 case 'progress':
-                    if (!this.config.live){
+                    if (!this.config.live.active){
                       setProgress(this.elements.display.buffer, this.buffered * 100);
                     }
                     break;
@@ -749,7 +750,7 @@ const controls = {
 
         // Display the time a click would seek to
         controls.updateTimeDisplay.call(this, this.elements.display.seekTooltip, (this.duration / 100) * percent);
-        if (this.config.live) {
+        if (this.config.live.active) {
           controls.updateTimeDisplay.call(this, this.elements.display.duration, this.currentTime);
         }
         // Set position
@@ -774,7 +775,7 @@ const controls = {
             invert ? this.duration - this.currentTime : this.currentTime,
             invert,
         );
-        if (this.config.live) {
+        if (this.config.live.active) {
           controls.updateTimeDisplay.call(
             this,
             this.elements.display.duration,
@@ -822,7 +823,7 @@ const controls = {
 
         // If there's a duration element, update content
         if (hasDuration) {
-          if (this.config.live) {
+          if (this.config.live.active) {
             controls.updateTimeDisplay.call(this, this.elements.display.duration, this.currentTime);
           }
           else {
@@ -1346,7 +1347,7 @@ const controls = {
                 const progress = createElement('div', getAttributesFromSelector(this.config.selectors.progress));
 
                 // Seek range slider
-                if (!this.config.live) {
+                if (!this.config.live.active) {
                   progress.appendChild(
                       createRange.call(this, 'seek', {
                           id: `plyr-seek-${data.id}`,

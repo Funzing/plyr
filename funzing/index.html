@@ -7,16 +7,18 @@
     <style>
         .container {
             margin: 20px auto;
-            width: 375px;
+            max-width: 375px;
         }
         video {
             width: 100%;
+            height: 240px;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <video controls crossorigin autoplay muted></video>
+    <video controls crossorigin playsinline
+           poster=""></video>
 </div>
 
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>

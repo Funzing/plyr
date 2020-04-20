@@ -37,282 +37,295 @@ import { parseUrl } from './utils/urls';
 // Plyr instance
 class Plyr {
     constructor(target, options) {
-        this.timers = {};
 
-        // State
-        this.ready = false;
-        this.loading = false;
-        this.failed = false;
+      this.timers = {};
 
-        // Touch device
-        this.touch = support.touch;
+      // State
+      this.ready = false;
+      this.loading = false;
+      this.failed = false;
 
-        // Set the media element
-        this.media = target;
+      // Touch device
+      this.touch = support.touch;
 
-        // String selector passed
-        if (is.string(this.media)) {
-            this.media = document.querySelectorAll(this.media);
-        }
+      // Set the media element
+      this.media = target;
 
-        // jQuery, NodeList or Array passed, use first element
-        if ((window.jQuery && this.media instanceof jQuery) || is.nodeList(this.media) || is.array(this.media)) {
-            // eslint-disable-next-line
-            this.media = this.media[0];
-        }
+      // String selector passed
+      if (is.string(this.media)) {
+        this.media = document.querySelectorAll(this.media);
+      }
 
-        // Set config
-        this.config = extend(
-            {},
-            defaults,
-            Plyr.defaults,
-            options || {},
-            (() => {
-                try {
-                    return JSON.parse(this.media.getAttribute('data-plyr-config'));
-                } catch (e) {
-                    return {};
-                }
-            })(),
-        );
+      // jQuery, NodeList or Array passed, use first element
+      if ((window.jQuery && this.media instanceof jQuery) || is.nodeList(this.media) || is.array(this.media)) {
+        // eslint-disable-next-line
+        this.media = this.media[0];
+      }
 
-        // Elements cache
-        this.elements = {
-            container: null,
-            captions: null,
-            buttons: {},
-            display: {},
-            progress: {},
-            inputs: {},
-            settings: {
-                popup: null,
-                menu: null,
-                panels: {},
-                buttons: {},
-            },
-        };
+      // Set config
+      this.config = extend(
+        {},
+        defaults,
+        Plyr.defaults,
+        options || {},
+        (() => {
+          try {
+            return JSON.parse(this.media.getAttribute('data-plyr-config'));
+          } catch (e) {
+            return {};
+          }
+        })(),
+      );
 
-        // Captions
-        this.captions = {
-            active: null,
-            currentTrack: -1,
-            meta: new WeakMap(),
-        };
+      // Elements cache
+      this.elements = {
+        container: null,
+        captions: null,
+        buttons: {},
+        display: {},
+        progress: {},
+        inputs: {},
+        settings: {
+          popup: null,
+          menu: null,
+          panels: {},
+          buttons: {},
+        },
+      };
 
-        // Fullscreen
-        this.fullscreen = {
-            active: false,
-        };
+      // Captions
+      this.captions = {
+        active: null,
+        currentTrack: -1,
+        meta: new WeakMap(),
+      };
 
-        // Options
-        this.options = {
-            speed: [],
-            quality: [],
-        };
+      // Fullscreen
+      this.fullscreen = {
+        active: false,
+      };
 
-        // Debugging
-        // TODO: move to globals
-        this.debug = new Console(this.config.debug);
+      // Options
+      this.options = {
+        speed: [],
+        quality: [],
+      };
 
-        // Log config options and support
-        this.debug.log('Config', this.config);
-        this.debug.log('Support', support);
+      // Debugging
+      // TODO: move to globals
+      this.debug = new Console(this.config.debug);
 
-        // We need an element to setup
-        if (is.nullOrUndefined(this.media) || !is.element(this.media)) {
-            this.debug.error('Setup failed: no suitable element passed');
+      // Log config options and support
+      this.debug.log('Config', this.config);
+      this.debug.log('Support', support);
+
+      // We need an element to setup
+      if (is.nullOrUndefined(this.media) || !is.element(this.media)) {
+        this.debug.error('Setup failed: no suitable element passed');
+        return;
+      }
+
+      // Bail if the element is initialized
+      if (this.media.plyr) {
+        this.debug.warn('Target already setup');
+        return;
+      }
+
+      // Bail if not enabled
+      if (!this.config.enabled) {
+        this.debug.error('Setup failed: disabled by config');
+        return;
+      }
+
+      // Bail if disabled or no basic support
+      // You may want to disable certain UAs etc
+      if (!support.check().api) {
+        this.debug.error('Setup failed: no support');
+        return;
+      }
+
+      // Cache original element state for .destroy()
+      const clone = this.media.cloneNode(true);
+      clone.autoplay = false;
+      this.elements.original = clone;
+
+      // Set media type based on tag or data attribute
+      // Supported: video, audio, vimeo, youtube
+      const type = this.media.tagName.toLowerCase();
+      // Embed properties
+      let iframe = null;
+      let url = null;
+
+      // Different setup based on type
+      switch (type) {
+        case 'div':
+          // Find the frame
+          iframe = this.media.querySelector('iframe');
+
+          // <iframe> type
+          if (is.element(iframe)) {
+            // Detect provider
+            url = parseUrl(iframe.getAttribute('src'));
+            this.provider = getProviderByUrl(url.toString());
+
+            // Rework elements
+            this.elements.container = this.media;
+            this.media = iframe;
+
+            // Reset classname
+            this.elements.container.className = '';
+
+            // Get attributes from URL and set config
+            if (url.search.length) {
+              const truthy = ['1', 'true'];
+
+              if (truthy.includes(url.searchParams.get('autoplay'))) {
+                this.config.autoplay = true;
+              }
+              if (truthy.includes(url.searchParams.get('loop'))) {
+                this.config.loop.active = true;
+              }
+
+              // TODO: replace fullscreen.iosNative with this playsinline config option
+              // YouTube requires the playsinline in the URL
+              if (this.isYouTube) {
+                this.config.playsinline = truthy.includes(url.searchParams.get('playsinline'));
+                this.config.youtube.hl = url.searchParams.get('hl'); // TODO: Should this be setting language?
+              } else {
+                this.config.playsinline = true;
+              }
+            }
+          } else {
+            // <div> with attributes
+            this.provider = this.media.getAttribute(this.config.attributes.embed.provider);
+
+            // Remove attribute
+            this.media.removeAttribute(this.config.attributes.embed.provider);
+          }
+
+          // Unsupported or missing provider
+          if (is.empty(this.provider) || !Object.keys(providers).includes(this.provider)) {
+            this.debug.error('Setup failed: Invalid provider');
             return;
-        }
+          }
 
-        // Bail if the element is initialized
-        if (this.media.plyr) {
-            this.debug.warn('Target already setup');
-            return;
-        }
+          // Audio will come later for external providers
+          this.type = types.video;
 
-        // Bail if not enabled
-        if (!this.config.enabled) {
-            this.debug.error('Setup failed: disabled by config');
-            return;
-        }
+          break;
 
-        // Bail if disabled or no basic support
-        // You may want to disable certain UAs etc
-        if (!support.check().api) {
-            this.debug.error('Setup failed: no support');
-            return;
-        }
+        case 'video':
+        case 'audio':
+          this.type = type;
+          this.provider = providers.html5;
 
-        // Cache original element state for .destroy()
-        const clone = this.media.cloneNode(true);
-        clone.autoplay = false;
-        this.elements.original = clone;
+          // Get config from attributes
+          if (this.media.hasAttribute('crossorigin')) {
+            this.config.crossorigin = true;
+          }
+          if (this.media.hasAttribute('autoplay')) {
+            this.config.autoplay = true;
+          }
+          if (this.media.hasAttribute('playsinline') || this.media.hasAttribute('webkit-playsinline')) {
+            this.config.playsinline = true;
+          }
+          if (this.media.hasAttribute('muted')) {
+            this.config.muted = true;
+          }
+          if (this.media.hasAttribute('loop')) {
+            this.config.loop.active = true;
+          }
 
-        // Set media type based on tag or data attribute
-        // Supported: video, audio, vimeo, youtube
-        const type = this.media.tagName.toLowerCase();
-        // Embed properties
-        let iframe = null;
-        let url = null;
+          break;
 
-        // Different setup based on type
-        switch (type) {
-            case 'div':
-                // Find the frame
-                iframe = this.media.querySelector('iframe');
+        default:
+          this.debug.error('Setup failed: unsupported type');
+          return;
+      }
 
-                // <iframe> type
-                if (is.element(iframe)) {
-                    // Detect provider
-                    url = parseUrl(iframe.getAttribute('src'));
-                    this.provider = getProviderByUrl(url.toString());
+      // Check for support again but with type
+      this.supported = support.check(this.type, this.provider, this.config.playsinline);
 
-                    // Rework elements
-                    this.elements.container = this.media;
-                    this.media = iframe;
+      // If no support for even API, bail
+      if (!this.supported.api) {
+        this.debug.error('Setup failed: no support');
+        return;
+      }
 
-                    // Reset classname
-                    this.elements.container.className = '';
+      this.eventListeners = [];
 
-                    // Get attributes from URL and set config
-                    if (url.search.length) {
-                        const truthy = ['1', 'true'];
+      // Create listeners
+      this.listeners = new Listeners(this);
 
-                        if (truthy.includes(url.searchParams.get('autoplay'))) {
-                            this.config.autoplay = true;
-                        }
-                        if (truthy.includes(url.searchParams.get('loop'))) {
-                            this.config.loop.active = true;
-                        }
+      // Setup local storage for user settings
+      this.storage = new Storage(this);
 
-                        // TODO: replace fullscreen.iosNative with this playsinline config option
-                        // YouTube requires the playsinline in the URL
-                        if (this.isYouTube) {
-                            this.config.playsinline = truthy.includes(url.searchParams.get('playsinline'));
-                            this.config.youtube.hl = url.searchParams.get('hl'); // TODO: Should this be setting language?
-                        } else {
-                            this.config.playsinline = true;
-                        }
-                    }
-                } else {
-                    // <div> with attributes
-                    this.provider = this.media.getAttribute(this.config.attributes.embed.provider);
+      // Store reference
+      this.media.plyr = this;
 
-                    // Remove attribute
-                    this.media.removeAttribute(this.config.attributes.embed.provider);
-                }
+      // Wrap media
+      if (!is.element(this.elements.container)) {
+        this.elements.container = createElement('div', { tabindex: 0 });
+        wrap(this.media, this.elements.container);
+      }
 
-                // Unsupported or missing provider
-                if (is.empty(this.provider) || !Object.keys(providers).includes(this.provider)) {
-                    this.debug.error('Setup failed: Invalid provider');
-                    return;
-                }
+      // Add style hook
+      ui.addStyleHook.call(this);
 
-                // Audio will come later for external providers
-                this.type = types.video;
+      // Setup media
+      media.setup.call(this);
 
-                break;
+      // Listen for events if debugging
+      if (this.config.debug) {
+        on.call(this, this.elements.container, this.config.events.join(' '), event => {
+          this.debug.log(`event: ${event.type}`);
+        });
+      }
 
-            case 'video':
-            case 'audio':
-                this.type = type;
-                this.provider = providers.html5;
+      // Setup interface
+      // If embed but not fully supported, build interface now to avoid flash of controls
+      if (this.isHTML5 || (this.isEmbed && !this.supported.ui)) {
+        ui.build.call(this);
+      }
 
-                // Get config from attributes
-                if (this.media.hasAttribute('crossorigin')) {
-                    this.config.crossorigin = true;
-                }
-                if (this.media.hasAttribute('autoplay')) {
-                    this.config.autoplay = true;
-                }
-                if (this.media.hasAttribute('playsinline') || this.media.hasAttribute('webkit-playsinline')) {
-                    this.config.playsinline = true;
-                }
-                if (this.media.hasAttribute('muted')) {
-                    this.config.muted = true;
-                }
-                if (this.media.hasAttribute('loop')) {
-                    this.config.loop.active = true;
-                }
+      // Container listeners
+      this.listeners.container();
 
-                break;
+      // Global listeners
+      this.listeners.global();
 
-            default:
-                this.debug.error('Setup failed: unsupported type');
-                return;
-        }
+      // Setup fullscreen
+      this.fullscreen = new Fullscreen(this);
 
-        // Check for support again but with type
-        this.supported = support.check(this.type, this.provider, this.config.playsinline);
+      // Setup ads if provided
+      if (this.config.ads.enabled) {
+        this.ads = new Ads(this);
+      }
 
-        // If no support for even API, bail
-        if (!this.supported.api) {
-            this.debug.error('Setup failed: no support');
-            return;
-        }
+      if (this.config.live.active){
+        this.timers.live = setInterval(() => {
+          const startTime = parseInt(this.elements.display.live.getAttribute('aria-valuestart'));
+          const currentTime = parseInt(Date.now() / 1000) - startTime;
+          if (player && player.duration > 0 && player.duration < currentTime) {
+            this.debug.log(`Live time is stopped at ${currentTime} seconds`);
+            clearInterval(this.timers.live);
+            this.clearLive();
+          }
+        }, 1000);
+      }
 
-        this.eventListeners = [];
+      // Autoplay if required
+      if (this.isHTML5 && this.config.autoplay) {
+        setTimeout(() => this.play(), 10);
+      }
 
-        // Create listeners
-        this.listeners = new Listeners(this);
+      // Seek time will be recorded (in listeners.js) so we can prevent hiding controls for a few seconds after seek
+      this.lastSeekTime = 0;
 
-        // Setup local storage for user settings
-        this.storage = new Storage(this);
-
-        // Store reference
-        this.media.plyr = this;
-
-        // Wrap media
-        if (!is.element(this.elements.container)) {
-            this.elements.container = createElement('div', { tabindex: 0 });
-            wrap(this.media, this.elements.container);
-        }
-
-        // Add style hook
-        ui.addStyleHook.call(this);
-
-        // Setup media
-        media.setup.call(this);
-
-        // Listen for events if debugging
-        if (this.config.debug) {
-            on.call(this, this.elements.container, this.config.events.join(' '), event => {
-                this.debug.log(`event: ${event.type}`);
-            });
-        }
-
-        // Setup interface
-        // If embed but not fully supported, build interface now to avoid flash of controls
-        if (this.isHTML5 || (this.isEmbed && !this.supported.ui)) {
-            ui.build.call(this);
-        }
-
-        // Container listeners
-        this.listeners.container();
-
-        // Global listeners
-        this.listeners.global();
-
-        // Setup fullscreen
-        this.fullscreen = new Fullscreen(this);
-
-        // Setup ads if provided
-        if (this.config.ads.enabled) {
-            this.ads = new Ads(this);
-        }
-
-        // Autoplay if required
-        if (this.isHTML5 && this.config.autoplay) {
-            setTimeout(() => this.play(), 10);
-        }
-
-        // Seek time will be recorded (in listeners.js) so we can prevent hiding controls for a few seconds after seek
-        this.lastSeekTime = 0;
-
-        // Setup preview thumbnails if enabled
-        if (this.config.previewThumbnails.enabled) {
-            this.previewThumbnails = new PreviewThumbnails(this);
-        }
+      // Setup preview thumbnails if enabled
+      if (this.config.previewThumbnails.enabled) {
+        this.previewThumbnails = new PreviewThumbnails(this);
+      }
     }
 
     // ---------------------------------------
@@ -1034,6 +1047,11 @@ class Plyr {
         }
     }
 
+    clearLive() {
+      this.config.live.active = false;
+      removeElement(this.elements.display.live);
+    }
+
     /**
      * Toggle the player controls
      * @param {Boolean} [toggle] - Whether to show the controls
@@ -1148,6 +1166,7 @@ class Plyr {
 
                 // Reset state
                 this.ready = false;
+                this.config.live.active = false;
 
                 // Clear for garbage collection
                 setTimeout(() => {
@@ -1164,6 +1183,7 @@ class Plyr {
         clearTimeout(this.timers.loading);
         clearTimeout(this.timers.controls);
         clearTimeout(this.timers.resized);
+        clearInterval(this.timers.live);
 
         // Provider specific stuff
         if (this.isHTML5) {
@@ -1194,6 +1214,7 @@ class Plyr {
             // Vimeo does not always return
             setTimeout(done, 200);
         }
+
     }
 
     /**

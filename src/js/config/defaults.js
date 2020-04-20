@@ -4,7 +4,10 @@
 
 const defaults = {
     // Funzing Live
-    live: false,
+    live: {
+      active: false,
+      startTime : 0,
+    },
 
     // Disable
     enabled: true,

@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // For more options see: https://github.com/sampotts/plyr/#options
     // captions.update is required for captions to work with hls.js
-    const player = new Plyr(video, { live: true, controls: [  'play', 'live', 'progress', 'duration', 'mute', 'volume', 'airplay', 'fullscreen' ] });
+    const player = new Plyr(video, { debug: true, live: {active: true, startTime: 647}, controls: [  'play', 'live', 'progress', 'duration', 'mute', 'volume', 'airplay', 'fullscreen' ] });
 
     if (!Hls.isSupported()) {
         alert(1);
@@ -69,12 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Handle changing captions
         player.on('ready', () => {
             // Caption support is still flaky. See: https://github.com/sampotts/plyr/issues/994
-            setTimeout(function(){
-                player.play().then(() => {
-                    //player.forward(600);
-                    player.currentTime = 600;
-                })
-            },100);
+            // setTimeout(function(){
+            //     player.play().then(() => {
+            //         //player.forward(600);
+            //         player.currentTime = 600;
+            //     })
+            // },100);
         });
     }
 
