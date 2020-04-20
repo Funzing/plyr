@@ -54,10 +54,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // For more options see: https://github.com/sampotts/plyr/#options
     // captions.update is required for captions to work with hls.js
-    const player = new Plyr(video, { debug: true, live: {active: true, startTime: 647}, controls: [  'play', 'live', 'progress', 'duration', 'mute', 'volume', 'airplay', 'fullscreen' ] });
+    const player = new Plyr(video, { debug: true, live: {active: true, startTime: -10}, controls: [  'play', 'live', 'progress', 'duration', 'mute', 'volume', 'airplay', 'fullscreen' ] });
 
     if (!Hls.isSupported()) {
-        alert(1);
+        alert('regular video');
         video.src = source;
     } else {
         // For more Hls.js options, see https://github.com/dailymotion/hls.js

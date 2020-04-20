@@ -554,7 +554,14 @@ class Listeners {
                       player.pause();
                     } else {
                       const startTime = elements.display.live.getAttribute('aria-valuestart');
-                      const currentTime = parseInt(Date.now() / 1000) - parseInt(startTime);
+                      let currentTime = parseInt(Date.now() / 1000) - parseInt(startTime);
+
+                      //if the live is within 10 seconds, make it start now
+                      if (currentTime >= -10 && currentTime < 0) {
+                        currentTime = 0;
+                        elements.display.live.setAttribute('aria-valuestart', parseInt(Date.now() / 1000));
+                        this.player.debug.log('set currentTime to 0')
+                      }
                       player.currentTime = currentTime;
                       player.play();
                     }
