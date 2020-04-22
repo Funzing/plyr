@@ -54,29 +54,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // For more options see: https://github.com/sampotts/plyr/#options
     // captions.update is required for captions to work with hls.js
-    const player = new Plyr(video, { debug: true, live: {active: true, startTime: -10}, fullscreen: {enabled:true, fallback:true, iosNative:false}, controls: [  'play', 'live', 'progress', 'duration', 'mute', 'volume', 'airplay', 'fullscreen' ] });
+    const player = new Plyr(video, { debug: true, live: {active: true, startTime: 600}, fullscreen: {enabled:true, fallback:true, iosNative:false}, controls: [  'play', 'live', 'progress', 'duration', 'mute', 'volume', 'airplay', 'fullscreen' ] });
 
-    if (!Hls.isSupported()) {
-        alert('regular video');
-        video.src = source;
+    if (typeof HLS === 'undefined' || !Hls.isSupported()) {
+      console.log('regular video');
+      player.source = {
+        type: 'video',
+        sources: [
+          {
+            src: source,
+            provider: 'vimeo',
+          },
+        ],
+      };
     } else {
         // For more Hls.js options, see https://github.com/dailymotion/hls.js
         const hls = new Hls();
         hls.loadSource(source);
         hls.attachMedia(video);
         window.hls = hls;
-
-        // Handle changing captions
-        player.on('ready', () => {
-            // Caption support is still flaky. See: https://github.com/sampotts/plyr/issues/994
-            // setTimeout(function(){
-            //     player.play().then(() => {
-            //         //player.forward(600);
-            //         player.currentTime = 600;
-            //     })
-            // },100);
-        });
     }
+
+    // Handle changing captions
+    // player.on('ready', () => {
+    //   setTimeout(function(){
+    //       player.play().then(() => {
+    //           //player.forward(600);
+    //           player.currentTime = 600;
+    //       })
+    //   },100);
+    // });
 
     // Expose player so it can be used from the console
     window.player = player;
