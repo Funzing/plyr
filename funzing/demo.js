@@ -49,20 +49,34 @@ const controls = `
 </div>
 `;
 document.addEventListener('DOMContentLoaded', () => {
-    const source = 'https://player.vimeo.com/external/406611450.m3u8?s=08c38973e5bd65c6a821ffc8be713f753926a0bb';
+    const source = 'https://player.vimeo.com/external/399242229.m3u8?s=9d5329eb98df991d78b4b92686357f471ead4ef3';
+    const sourceV = 'https://player.vimeo.com/video/399242229';
     const video = document.querySelector('video');
 
     // For more options see: https://github.com/sampotts/plyr/#options
     // captions.update is required for captions to work with hls.js
-    const player = new Plyr(video, { debug: true, live: {active: true, startTime: 600}, fullscreen: {enabled:true, fallback:true, iosNative:false}, controls: [  'play', 'live', 'progress', 'duration', 'mute', 'volume', 'airplay', 'fullscreen' ] });
+    const player = new Plyr(video, {
+      debug: true,
+      muted: true,
+      live: {active: true, startTime: 2000},
+      fullscreen: {enabled: true, fallback: true, iosNative: false},
+      controls: [ 'play', 'live', 'progress', 'duration', 'mute', 'volume', 'airplay', 'fullscreen' ]
+    });
 
-    if (typeof HLS === 'undefined' || !Hls.isSupported()) {
-      console.log('regular video');
+    if (typeof Hls === 'undefined' || !Hls.isSupported()) {
+      // alert('regular video');
+      if (video.canPlayType('application/vnd.apple.mpegurl11')) {
+        // alert('canPlayType');
+        video.src = source;
+        video.addEventListener('loadedmetadata', function() {
+          player.play();
+        });
+      }
       player.source = {
         type: 'video',
         sources: [
           {
-            src: source,
+            src: sourceV,
             provider: 'vimeo',
           },
         ],
@@ -76,14 +90,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Handle changing captions
-    // player.on('ready', () => {
-    //   setTimeout(function(){
-    //       player.play().then(() => {
-    //           //player.forward(600);
-    //           player.currentTime = 600;
-    //       })
-    //   },100);
-    // });
+    player.on('ready', () => {
+      // setTimeout(function(){
+      //     player.play().then(() => {
+      //         //player.forward(600);
+      //         player.currentTime = 600;
+      //     })
+      // },100);
+    });
 
     // Expose player so it can be used from the console
     window.player = player;

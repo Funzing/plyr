@@ -554,7 +554,7 @@ class Listeners {
                   }
                   else {
                     const startTime = elements.display.live.getAttribute('aria-valuestart');
-                    let currentTime = parseInt(Date.now() / 1000, 10) - parseInt(startTime, 10);
+                    let currentTime = parseInt(String(Date.now() / 1000), 10) - parseInt(startTime, 10);
 
                     // if the live is within 10 seconds, make it start now
                     if (currentTime >= -10 && currentTime < 0) {
@@ -562,8 +562,18 @@ class Listeners {
                       elements.display.live.setAttribute('aria-valuestart', parseInt(Date.now() / 1000, 10));
                       this.player.debug.log('set currentTime to 0')
                     }
-                    player.currentTime = currentTime;
-                    player.play();
+                    if (player.media.buffered && player.media.buffered.length < 1) {
+                      player.timers.livebuffer = setInterval(function () {
+                        if (player.media.buffered && player.media.buffered.length === 1) {
+                          clearInterval(player.timers.livebuffer);
+                          player.currentTime = currentTime;
+                          player.play();
+                        }
+                      },200);
+                    } else {
+                      player.currentTime = currentTime;
+                      player.play();
+                    }
                   }
                 },
                 'play',
