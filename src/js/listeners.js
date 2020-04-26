@@ -563,13 +563,13 @@ class Listeners {
                       this.player.debug.log('set currentTime to 0')
                     }
                     if (player.media.buffered && player.media.buffered.length < 1) {
-                      player.timers.livebuffer = setInterval(function () {
+                      player.timers.liveBuffer = setInterval( () => {
                         if (player.media.buffered && player.media.buffered.length === 1) {
-                          clearInterval(player.timers.livebuffer);
+                          clearInterval(player.timers.liveBuffer);
                           player.currentTime = currentTime;
                           player.play();
                         }
-                      },200);
+                      }, 200);
                     } else {
                       player.currentTime = currentTime;
                       player.play();

@@ -1184,7 +1184,7 @@ class Plyr {
         clearTimeout(this.timers.controls);
         clearTimeout(this.timers.resized);
         clearInterval(this.timers.live);
-        clearInterval(this.timers.livebuffer);
+        clearInterval(this.timers.liveBuffer);
 
         // Provider specific stuff
         if (this.isHTML5) {
