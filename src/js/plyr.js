@@ -311,9 +311,9 @@ class Plyr {
             clearInterval(this.timers.live);
             this.clearLive();
           } else if (this.media.paused) {
-            controls.timeUpdate.call(player);
+            controls.updateTimeDisplay.call(this, this.elements.display.duration, this.config.live.progress ? this.duration : this.currentTime);
           }
-        }, 1000);
+        }, 500);
       }
 
       // Autoplay if required
