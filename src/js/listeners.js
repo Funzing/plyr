@@ -546,7 +546,7 @@ class Listeners {
                 button,
                 'click',
                 () => {
-                  if (!player.config.live.active) {
+                  if (!player.config.live.active || player.config.live.progress) {
                     player.togglePlay();
                   }
                   else if (player.playing) {

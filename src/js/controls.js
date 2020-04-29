@@ -749,7 +749,7 @@ const controls = {
 
         // Display the time a click would seek to
         controls.updateTimeDisplay.call(this, this.elements.display.seekTooltip, (this.duration / 100) * percent);
-        if (this.config.live.active) {
+        if (this.config.live.active && !this.config.live.progress) {
           controls.updateTimeDisplay.call(this, this.elements.display.duration, this.currentTime);
         }
         // Set position
@@ -778,7 +778,7 @@ const controls = {
           controls.updateTimeDisplay.call(
             this,
             this.elements.display.duration,
-            this.currentTime);
+            this.config.live.progress ? this.duration : this.currentTime);
         }
 
         // Ignore updates while seeking
@@ -1346,7 +1346,7 @@ const controls = {
                 const progress = createElement('div', getAttributesFromSelector(this.config.selectors.progress));
 
                 // Seek range slider
-                if (!this.config.live.active) {
+                if (!this.config.live.active || this.config.live.progress) {
                   progress.appendChild(
                       createRange.call(this, 'seek', {
                           id: `plyr-seek-${data.id}`,

@@ -56,31 +56,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // For more options see: https://github.com/sampotts/plyr/#options
     // captions.update is required for captions to work with hls.js
     const player = new Plyr(video, {
-      debug: true,
+      debug: false,
       muted: true,
-      live: {active: true, startTime: 2000},
+      autoplay: true,
+      live: {active: true, progress: true, startTime: -7},
       fullscreen: {enabled: true, fallback: true, iosNative: false},
       controls: [ 'play', 'live', 'progress', 'duration', 'mute', 'volume', 'airplay', 'fullscreen' ]
     });
 
     if (typeof Hls === 'undefined' || !Hls.isSupported()) {
-      // alert('regular video');
-      if (video.canPlayType('application/vnd.apple.mpegurl11')) {
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
         // alert('canPlayType');
         video.src = source;
-        video.addEventListener('loadedmetadata', function() {
-          player.play();
-        });
+        // video.addEventListener('loadeddata', function() {
+        //   //player.media.currentTime = 600
+        //   //player.play();
+        // });
+      } else {
+        alert('regular video');
+        player.source = {
+          type: 'video',
+          sources: [
+            {
+              src: sourceV,
+              provider: 'vimeo',
+            },
+          ],
+        };
       }
-      player.source = {
-        type: 'video',
-        sources: [
-          {
-            src: sourceV,
-            provider: 'vimeo',
-          },
-        ],
-      };
     } else {
         // For more Hls.js options, see https://github.com/dailymotion/hls.js
         const hls = new Hls();

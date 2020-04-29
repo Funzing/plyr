@@ -316,7 +316,31 @@ class Plyr {
 
       // Autoplay if required
       if (this.isHTML5 && this.config.autoplay) {
-        setTimeout(() => this.play(), 10);
+        setTimeout(() => {
+          if (!this.config.live.active) {
+            return this.play()
+          } else {
+            const startTime = this.elements.display.live.getAttribute('aria-valuestart');
+            let currentTime = parseInt(String(Date.now() / 1000), 10) - parseInt(startTime, 10); // if the live is within 10 seconds, make it start now
+            if (currentTime >= -10 && currentTime < 0) {
+              currentTime = 0;
+              this.elements.display.live.setAttribute('aria-valuestart', parseInt(Date.now() / 1000, 10));
+              this.debug.log('set currentTime to 0');
+            }
+            this.media.currentTime = currentTime;
+            if (this.media.currentTime === 0 && currentTime > 0) {
+              this.media.addEventListener("canplay", () => {
+                if (this.media.readyState >= 3 && this.media.currentTime === 0) {
+                  this.media.currentTime = currentTime;
+                  return this.media.play();
+                }
+              });
+              return this.media.load();
+            } else {
+              return this.play();
+            }
+          }
+        }, 10);
       }
 
       // Seek time will be recorded (in listeners.js) so we can prevent hiding controls for a few seconds after seek
@@ -524,6 +548,10 @@ class Plyr {
      * Get the duration of the current media
      */
     get duration() {
+        if(this.config.live.active && this.config.live.progress){
+          const startTime = this.elements.display.live.getAttribute('aria-valuestart');
+          return parseInt(String(Date.now() / 1000), 10) - parseInt(startTime, 10); // if the live is within 10 seconds, make it start now
+        }
         // Faux duration set via config
         const fauxDuration = parseFloat(this.config.duration);
         // Media duration can be NaN or Infinity before the media has loaded
