@@ -319,27 +319,25 @@ class Plyr {
         setTimeout(() => {
           if (!this.config.live.active) {
             return this.play()
-          } else {
-            const startTime = this.elements.display.live.getAttribute('aria-valuestart');
-            let currentTime = parseInt(String(Date.now() / 1000), 10) - parseInt(startTime, 10); // if the live is within 10 seconds, make it start now
-            if (currentTime >= -10 && currentTime < 0) {
-              currentTime = 0;
-              this.elements.display.live.setAttribute('aria-valuestart', parseInt(Date.now() / 1000, 10));
-              this.debug.log('set currentTime to 0');
-            }
-            this.media.currentTime = currentTime;
-            if (this.media.currentTime === 0 && currentTime > 0) {
-              this.media.addEventListener("canplay", () => {
-                if (this.media.readyState >= 3 && this.media.currentTime === 0) {
-                  this.media.currentTime = currentTime;
-                  return this.media.play();
-                }
-              });
-              return this.media.load();
-            } else {
-              return this.play();
-            }
           }
+          const startTime = this.elements.display.live.getAttribute('aria-valuestart');
+          let currentTime = parseInt(String(Date.now() / 1000), 10) - parseInt(startTime, 10); // if the live is within 10 seconds, make it start now
+          if (currentTime >= -10 && currentTime < 0) {
+            currentTime = 0;
+            this.elements.display.live.setAttribute('aria-valuestart', parseInt(Date.now() / 1000, 10));
+            this.debug.log('set currentTime to 0');
+          }
+          this.media.currentTime = currentTime;
+          if (this.media.currentTime === 0 && currentTime > 0) {
+            this.media.addEventListener("canplay", () => {
+              if (this.media.readyState >= 3 && this.media.currentTime === 0) {
+                this.media.currentTime = currentTime;
+                this.media.play();
+              }
+            });
+            return this.media.load();
+          }
+          return this.play();
         }, 10);
       }
 
