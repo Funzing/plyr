@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
       debug: false,
       muted: true,
       autoplay: true,
-      live: {active: true, progress: true, startTime: -7},
+      live: {active: true, progress: true, startTime: 2390},
       fullscreen: {enabled: true, fallback: true, iosNative: false},
       controls: [ 'play', 'live', 'progress', 'duration', 'mute', 'volume', 'airplay', 'fullscreen' ]
     });

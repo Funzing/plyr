@@ -310,6 +310,8 @@ class Plyr {
             this.debug.log(`Live time is stopped at ${currentTime} seconds`);
             clearInterval(this.timers.live);
             this.clearLive();
+          } else if (this.media.paused) {
+            controls.timeUpdate.call(player);
           }
         }, 1000);
       }
