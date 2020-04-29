@@ -7,6 +7,7 @@ const defaults = {
     live: {
       active: false,
       startTime : 0,
+      progress: false,
     },
 
     // Disable
